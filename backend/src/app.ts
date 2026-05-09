@@ -54,7 +54,9 @@ export function createApp(): express.Application {
   app.use('/', redirectRoutes);
 
   // 2. Serve static frontend files
-  const frontendPath = path.join(__dirname, '../out');
+  const frontendPath = process.env.NODE_ENV === 'production' 
+    ? path.join('/app', 'out') 
+    : path.join(__dirname, '../../frontend/out');
   app.use(express.static(frontendPath));
 
   // 3. Catch-all for SPA routing
