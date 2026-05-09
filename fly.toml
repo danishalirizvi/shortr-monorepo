@@ -2,6 +2,7 @@ app = "your-shortr"
 primary_region = "iad"
 
 [build]
+  dockerfile = "backend/Dockerfile"
 
 # Non-secret env vars — secrets (MONGO_URI, REDIS_URL) set via `fly secret set`
 [env]
