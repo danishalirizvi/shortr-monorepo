@@ -1,0 +1,44 @@
+app = "your-shortr"
+primary_region = "iad"
+
+[build]
+
+# Non-secret env vars — secrets (MONGO_URI, REDIS_URL) set via `fly secret set`
+[env]
+  NODE_ENV   = "production"
+  PORT       = "3000"
+  HOST       = "0.0.0.0"
+  LOG_LEVEL  = "info"
+  LOG_DIR    = "logs"
+  BASE_URL   = "https://your-shortr.fly.dev"
+
+  # Rate limits
+  RATE_LIMIT_WINDOW_MS          = "60000"
+  RATE_LIMIT_MAX_REQUESTS       = "100"
+  CREATE_RATE_LIMIT_WINDOW_MS   = "60000"
+  CREATE_RATE_LIMIT_MAX_REQUESTS = "10"
+
+[http_service]
+  internal_port       = 3000
+  force_https         = true
+  auto_stop_machines  = "suspend"   # keep alive — liveness needs persistent processes
+  auto_start_machines = true
+  min_machines_running = 1      # HA: always 2 instances up
+
+  [http_service.concurrency]
+    type       = "requests"
+    hard_limit = 250
+    soft_limit = 200
+
+  # Readiness check — waits for MongoDB + Redis before sending traffic
+  [[http_service.checks]]
+    grace_period = "15s"
+    interval     = "30s"
+    method       = "GET"
+    path         = "/api/v1/health/ready"
+    timeout      = "5s"
+
+[[vm]]
+  memory   = "256mb"
+  cpu_kind = "shared"
+  cpus     = 1
