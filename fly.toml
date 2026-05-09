@@ -1,45 +1,47 @@
-app = "your-shortr"
-primary_region = "iad"
+# fly.toml app configuration file generated for your-shortr on 2026-05-09T17:41:21Z
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'your-shortr'
+primary_region = 'iad'
 
 [build]
-  dockerfile = "backend/Dockerfile"
+  dockerfile = 'backend/Dockerfile'
 
-# Non-secret env vars — secrets (MONGO_URI, REDIS_URL) set via `fly secret set`
 [env]
-  NODE_ENV   = "production"
-  PORT       = "3000"
-  HOST       = "0.0.0.0"
-  LOG_LEVEL  = "info"
-  LOG_DIR    = "logs"
-  BASE_URL   = "https://your-shortr.fly.dev"
-
-  # Rate limits
-  RATE_LIMIT_WINDOW_MS          = "60000"
-  RATE_LIMIT_MAX_REQUESTS       = "100"
-  CREATE_RATE_LIMIT_WINDOW_MS   = "60000"
-  CREATE_RATE_LIMIT_MAX_REQUESTS = "10"
+  BASE_URL = 'https://your-shortr.fly.dev'
+  CREATE_RATE_LIMIT_MAX_REQUESTS = '10'
+  CREATE_RATE_LIMIT_WINDOW_MS = '60000'
+  HOST = '0.0.0.0'
+  LOG_DIR = 'logs'
+  LOG_LEVEL = 'info'
+  NODE_ENV = 'production'
+  PORT = '3000'
+  RATE_LIMIT_MAX_REQUESTS = '100'
+  RATE_LIMIT_WINDOW_MS = '60000'
 
 [http_service]
-  internal_port       = 3000
-  force_https         = true
-  auto_stop_machines  = "suspend"   # keep alive — liveness needs persistent processes
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = 'suspend'
   auto_start_machines = true
-  min_machines_running = 1      # HA: always 2 instances up
+  min_machines_running = 1
 
   [http_service.concurrency]
-    type       = "requests"
+    type = 'requests'
     hard_limit = 250
     soft_limit = 200
 
-  # Readiness check — waits for MongoDB + Redis before sending traffic
   [[http_service.checks]]
-    grace_period = "15s"
-    interval     = "30s"
-    method       = "GET"
-    path         = "/api/v1/health/ready"
-    timeout      = "5s"
+    interval = '30s'
+    timeout = '5s'
+    grace_period = '15s'
+    method = 'GET'
+    path = '/api/v1/health/ready'
 
 [[vm]]
-  memory   = "256mb"
-  cpu_kind = "shared"
-  cpus     = 1
+  memory = '256mb'
+  cpu_kind = 'shared'
+  cpus = 1
+  memory_mb = 256
