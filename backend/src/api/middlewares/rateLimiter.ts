@@ -37,32 +37,25 @@ export const createLimiter = rateLimit({
 // Applied to POST /api/v1/public-create — Redis-backed so the counter is shared
 // across all Fly.io instances (in-memory limiters are per-process).
 // 3 requests per hour per IP — strict because this route has no authentication.
-let publicCreateLimiterInstance: any;
-
-export const publicCreateLimiter = (req: Request, res: Response, next: NextFunction) => {
-  if (!publicCreateLimiterInstance) {
-    publicCreateLimiterInstance = rateLimit({
-      windowMs: 60 * 60 * 1000,
-      max: 3,
-      standardHeaders: 'draft-7',
-      legacyHeaders: false,
-      store: new RedisStore({
-        // ioredis v5 — arbitrary commands via the generic call interface.
-        // Cast required: ioredis types call() as Promise<unknown> but rate-limit-redis
-        // expects Promise<RedisReply> (boolean | number | string | array thereof).
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        sendCommand: (...args: string[]) => (getRedisClient() as any).call(...args) as Promise<boolean | number | string | (boolean | number | string)[]>,
-      }),
-      handler: (_req: Request, res: Response) => {
-        res.status(StatusCodes.TOO_MANY_REQUESTS).json({
-          success: false,
-          error: {
-            code: 'RATE_LIMIT_EXCEEDED',
-            message: "You've reached the limit for public link creation. Please try again in an hour.",
-          },
-        });
+export const publicCreateLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 3,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  store: new RedisStore({
+    // ioredis v5 — arbitrary commands via the generic call interface.
+    // Cast required: ioredis types call() as Promise<unknown> but rate-limit-redis
+    // expects Promise<RedisReply> (boolean | number | string | array thereof).
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    sendCommand: (...args: string[]) => (getRedisClient() as any).call(...args) as Promise<boolean | number | string | (boolean | number | string)[]>,
+  }),
+  handler: (req: Request, res: Response) => {
+    res.status(StatusCodes.TOO_MANY_REQUESTS).json({
+      success: false,
+      error: {
+        code: 'RATE_LIMIT_EXCEEDED',
+        message: "You've reached the limit for public link creation. Please try again in an hour.",
       },
     });
-  }
-  return publicCreateLimiterInstance(req, res, next);
-};
+  },
+});
