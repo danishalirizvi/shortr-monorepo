@@ -55,7 +55,7 @@ export function createApp(): express.Application {
 
   // 2. Serve static frontend files
   const frontendPath = process.env.NODE_ENV === 'production' 
-    ? path.join('/app', 'out') 
+    ? path.join('/app/backend', 'out') 
     : path.join(__dirname, '../../frontend/out');
   app.use(express.static(frontendPath));
 

@@ -40,8 +40,10 @@ COPY backend/package*.json ./backend/
 WORKDIR /app/backend
 RUN npm ci --omit=dev && npm cache clean --force
 
-# Copy compiled backend and static frontend files
+# Copy compiled backend
 COPY --from=builder /app/backend/dist ./dist
+
+# Copy static frontend files into /app/backend/out to match app.ts path resolution
 COPY --from=builder /app/frontend/out ./out
 
 # Pre-create logs dir with correct ownership
