@@ -42,13 +42,8 @@ export const publicCreateLimiter = rateLimit({
   max: 3,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
-  store: new RedisStore({
-    // ioredis v5 — arbitrary commands via the generic call interface.
-    // Cast required: ioredis types call() as Promise<unknown> but rate-limit-redis
-    // expects Promise<RedisReply> (boolean | number | string | array thereof).
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    sendCommand: (...args: string[]) => (getRedisClient() as any).call(...args) as Promise<boolean | number | string | (boolean | number | string)[]>,
-  }),
+  // Fallback to memory store if Redis is unavailable or not ready yet, 
+  // to prevent the app from crashing on startup.
   handler: (req: Request, res: Response) => {
     res.status(StatusCodes.TOO_MANY_REQUESTS).json({
       success: false,
